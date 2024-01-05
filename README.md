@@ -8,8 +8,8 @@ Please note this requires you to have a copy of both: the .epub file of your ebo
 
 ### Roadmap
 
-- Trimming, converting, and transcribing snippets of an audiobook segment is finished.
-- Searching the epub for the transcribed text and identifying its location (per the kindle calculation [method](https://wiki.mobileread.com/wiki/Page_numbers#Implementation))
+- Trimming, converting, and transcribing a snippet of an audiobook segment is finished.
+- Searching the epub for the transcribed text and identifying its location (per the kindle calculation [method](https://wiki.mobileread.com/wiki/Page_numbers#Implementation)) is in development.
 
 ### Google Cloud
 This project uses google cloud via [sound_recognition](https://pypi.org/project/SpeechRecognition/) for transcription of audio snippets, refer to this [guide](https://cloud.google.com/speech-to-text/docs/transcribe-api) on how to setup an account. The *absolute* path to your API key must be specified in a `.env` file as described below:
