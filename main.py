@@ -1,9 +1,12 @@
 #!/usr/bin/python3
+import speech_recognition as sr
 import ffmpy
 import sys
-
+import dotenv
+import os
 
 def prepFile(inFile, time=15):
+	#takes inputed audio file, trims it keeping only the first {time} seconds and converts it to a .wav for transcription
 	ff = ffmpy.FFmpeg(
 		inputs={
 			inFile : None
@@ -13,6 +16,20 @@ def prepFile(inFile, time=15):
 		}
 	)
 	ff.run()
+	return inFile.split(".")[0]+".wav" # returns preped file name
+
+def transcribe(inFile):
+	dotenv.load_dotenv() #load google cloud API key from .env to its enviroment variable
+	recogonizer=sr.Recognizer() #init speech_recognition
+	#convert .wav file into an AudioFile instance
+	audioFile = sr.AudioFile(inFile)  
+	with audioFile as source:
+		recordedAudio = recogonizer.record(source)
+	os.remove(inFile) #remove .wav file
+	return recogonizer.recognize_google_cloud(recordedAudio) #call google cloud api to transcribe audio
+
+def run(inFile):
+	print(transcribe(prepFile(inFile)))
 
 if __name__ == '__main__':
 	# little bit of stackoverflow magic which should let me call functions from the command like so:
