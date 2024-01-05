@@ -3,11 +3,11 @@ import ffmpy
 import sys
 
 def trimFile(inFile, outFile, time=15):
-	ff = ffmpy.FFmpeg( inputs={inFile : None}, outputs={ outFile: f"-t {time}"})
-	#ff.cmd.append('-loglevel')
-	#ff.cmd.append('quiet')
+	ff = ffmpy.FFmpeg( inputs={inFile : None}, outputs={ outFile: f"-t {time} -loglevel error"})
 	ff.run()
-
+def convertFile(inFile, outFile):
+	ff = ffmpy.FFmpeg( inputs={inFile : None}, outputs={ outFile: "-loglevel error"})
+	ff.run()
 
 if __name__ == '__main__':
 	# little bit of stackoverflow magic which should let me call functions from the command like so:
