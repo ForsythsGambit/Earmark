@@ -6,6 +6,8 @@ links.txt
 *.mp3
 *.wav
 *.m4b
+*.epub
+*.mobi
 test.*
 gcloud-earmark-key.json
 .env
