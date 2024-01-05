@@ -2,9 +2,10 @@
 /__pycache__
 /model
 start.sh
-location-spec.txt
+links.txt
 *.mp3
 *.wav
 *.m4b
 test.*
 gcloud-earmark-key.json
+.env
