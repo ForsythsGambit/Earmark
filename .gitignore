@@ -1,6 +1,7 @@
 /.venv
 /__pycache__
 /model
+/test
 start.sh
 links.txt
 *.mp3
@@ -11,3 +12,6 @@ links.txt
 test.*
 gcloud-earmark-key.json
 .env
+*.log
+targ.txt
+todo.md
