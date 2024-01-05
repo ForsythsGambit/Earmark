@@ -1,7 +1,10 @@
 /.venv
+/__pycache__
+/model
 start.sh
 location-spec.txt
 *.mp3
 *.wav
 *.m4b
 test.*
+gcloud-earmark-key.json
