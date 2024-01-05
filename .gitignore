@@ -1,0 +1,7 @@
+/.venv
+start.sh
+location-spec.txt
+*.mp3
+*.wav
+*.m4b
+test.*
