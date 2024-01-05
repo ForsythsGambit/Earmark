@@ -2,11 +2,16 @@
 import ffmpy
 import sys
 
-def trimFile(inFile, outFile, time=15):
-	ff = ffmpy.FFmpeg( inputs={inFile : None}, outputs={ outFile: f"-t {time} -loglevel error"})
-	ff.run()
-def convertFile(inFile, outFile):
-	ff = ffmpy.FFmpeg( inputs={inFile : None}, outputs={ outFile: "-loglevel error"})
+
+def prepFile(inFile, time=15):
+	ff = ffmpy.FFmpeg(
+		inputs={
+			inFile : None
+		},
+		outputs={
+			inFile.split(".")[0]+".wav": f"-t {time} -loglevel error" #this splits inFile at the `.` , takes the first half and adds .wav as the file extension
+		}
+	)
 	ff.run()
 
 if __name__ == '__main__':
