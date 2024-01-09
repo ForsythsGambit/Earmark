@@ -16,6 +16,5 @@ gcloud-earmark-key.json
 .env
 *.log
 targ.txt
-todo.md
 *.js
 experiment.py
