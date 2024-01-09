@@ -48,10 +48,11 @@ def getContentFiles(inFile):
 		fileList = [file[0]+".xhtml" for file in fileList if file[1]==("xhtml" or "html")]
 		#print(*fileList, sep="\n")
 		#location: part0011.xhtml, line 96
-	return fileList
+	return sorted(fileList) #it should already be in the correct order, but just in case
 
 def findMatches(ebook, inFile, target, confidenceLevel=80):
 	"""Parses the specified xhtml/html file within the specified ebook and searche ebook line which matches the transcripted text"""
+	# currently only functional when the target is the beginning of a line. Need to implement better optimizations for comparing middle of strings
 	matches = [] #list of strings matching transcription *should* only be one match ideally but ynk. 
 				 #Format: [(confidence level, matching line, path to file)] note: the unaltered line will be stored, not the adjusted one. 
 	with zipfile.ZipFile(ebook, "r") as epub:
@@ -61,50 +62,66 @@ def findMatches(ebook, inFile, target, confidenceLevel=80):
 		body=soup.find("body") #select only the body
 		if body:
 			for sLine in body.stripped_strings:
-				line = sLine.lower() #the transcription will be all lowercase so this will improve accuracy
-
-				#split strings by whitespace to count words
-				tempTarg=target.split()
-				tempLine=line.split()
-				
-				finLine = []
-				#trim text from ebook to same length of transcription for better comparison
-				if len(tempLine) > len(tempTarg):
-					for word in tempLine:
-						if len(finLine) < len(tempTarg):
-							finLine.append(word)
+				result = stringComparison(sLine, target, confidenceLevel)
+				if result:
+					intermediate=list(result)
+					intermediate.append(inFile)
+					matches.append(intermediate)
+					#print(matches)
 				else:
-					finLine=tempLine
-				
-				lineText = " ".join(finLine)
-				confidence = fuzz.ratio(target, lineText) 
-				if confidence  > confidenceLevel:
-					"""
-					print(f"Transcribed text:\n{target}")
-					print(f"Matching text:\n{lineText}")
-					print(f"Confidence: {confidence}")
-					"""
-					matches.append((confidence, sLine, inFile)) 
-				else:
-					pass
+					continue
 					#print(f"Confidence level of {fuzz.ratio(target, lineText)} too low")
 		else:
 			#no body found
 			pass
+	#print(matches)
 	return matches
 
-def searchEbook(ebook, target):
+def stringComparison(rawCompLine, target, confidenceLevel=80):
+	line = rawCompLine.lower() #the transcription will be all lowercase so this will improve accuracy
+
+	#split strings by whitespace to count words
+	tempTarg=target.split()
+	tempLine=line.split()
+	
+	finLine = []
+	#trim text from ebook to same length of transcription for better comparison
+	if len(tempLine) > len(tempTarg):
+		for word in tempLine:
+			if len(finLine) < len(tempTarg):
+				finLine.append(word)
+	else:
+		finLine=tempLine
+	
+	lineText = " ".join(finLine)
+	confidence = fuzz.ratio(target, lineText) 
+	if confidence  > confidenceLevel:
+		"""
+		print(f"Transcribed text:\n{target}")
+		print(f"Matching text:\n{lineText}")
+		print(f"Confidence: {confidence}")
+		"""
+		#print(f"{confidence} : {rawCompLine}")
+		return confidence, rawCompLine
+	else:
+		return None
+
+def searchEbook(ebook, target, confidenceLevel=80):
 	"""wrapper for getContentFiles() and findMatches(), takes an ebook and a snippet of text and returns any matches"""
+	#Format: [(confidence level, matching line, path to file)] note: the unaltered line will be stored, not the adjusted one. 
 	matches=[]
 	for file in getContentFiles(ebook):
 		#print(f"parsing {file}")
-		matches.extend(findMatches(ebook, file, target))
+		matches.extend(findMatches(ebook, file, target, confidenceLevel))
 	if len(matches) > 1:
 		#found multiple matches that exceed the confidence level
 		#deal with this later, ask user to select most correct one?
 		return matches
-	else:
+	elif len(matches) == 1:
 		return matches[0]
+	else:
+		#print("No matches")
+		return None
 
 """Wrapper"""
 
@@ -126,4 +143,5 @@ if __name__ == '__main__':
 		globals()[args[1]](*args[2:])
 	except IndexError:
 		#script was called without any commandline arguments, otherwise it would error with IndexError
-		run("test.mp3", "Alliances.epub")
+		#run("test.mp3", "Alliances.epub")
+		pass
