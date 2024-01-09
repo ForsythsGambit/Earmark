@@ -11,6 +11,7 @@ links.txt
 *.epub
 *.mobi
 test.*
+*.html
 gcloud-earmark-key.json
 .env
 *.log
