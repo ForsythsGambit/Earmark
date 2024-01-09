@@ -1,5 +1,6 @@
 /.venv
 /__pycache__
+/dump
 /model
 /test
 start.sh
@@ -16,3 +17,4 @@ gcloud-earmark-key.json
 targ.txt
 todo.md
 *.js
+experiment.py
