@@ -145,41 +145,6 @@ def calculateLocation(numBytes):
 	logging.info(f"Found kindle location: {loc} for byte position: {numBytes}")
 	return int(loc)
 
-"""wrapper"""
-
-def parseMobi(mobiPath):
-	dumpFolder = dumpMobi(mobiPath=mobiPath)
-	contentFile = getContentFile(inFolder=dumpFolder)
-	return contentFile #returns html file
-
-def searchEbook(mobiDump, searchText):
-	"""wrapper for findMatch(), loops over list of strings (or a single one) and finds matches in specified mobi dump"""
-	matches=[]
-	if not isinstance(searchText, list):
-		#searchEbook accepts a list of strings to search, if provided a single string add it to a list
-		logging.info("searchEbook expected list of search strings but got single string insted. String converted to single element list.")
-		text=searchText
-		searchText = []
-		searchText.append(text)
-
-	for searchString in searchText:
-		matches.append(findMatch(inputFile=mobiDump, searchText=searchString))
-
-	return matches #A list of dictionaries in format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}]
-
-def searchLocations(excerpts):
-	"""takes list of dictionaries and finds their kindle locations"""
-	locations = [] #list of dictionaries 
-	for excerpt in excerpts:
-		if excerpt == None:
-			continue
-		position=findBytes(file=excerpt["file"],searchText=excerpt["text"])
-		location=calculateLocation(position)
-		excerpt["location"]=location
-		locations.append(excerpt)
-	return locations #list of dictionaries in format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}]
-
-
 
 if __name__ == '__main__':
 	# see comment in main.py
