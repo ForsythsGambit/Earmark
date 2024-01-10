@@ -9,7 +9,7 @@ import math
 def dumpMobi(mobiPath, force=False):
 	"""dumps mobi file to a folder via kindle unpack"""
 	workingDirectory = os.getcwd()
-	logging.info("starting dumpMobi")
+	logging.info(f"Dumping mobi file to {os.getcwd()}/dump")
 	if "dump" not in os.listdir(workingDirectory):
 		#make dump directory if not found
 		logging.info(f"Making mobi dump directory")
@@ -24,7 +24,7 @@ def dumpMobi(mobiPath, force=False):
 	filename=filename.split(".")[0]
 	
 	if filename not in os.listdir(f"{workingDirectory}/dump/"):
-		logging.debug(f"Creating subdirectory dump/{filename}")
+		logging.info(f"Creating subdirectory dump/{filename}, dumping.")
 		subprocess.run(["python","kindle-unpack/kindleunpack.py", mobiPath, f"{workingDirectory}/dump/{filename}"])
 	elif force == True:
 		logging.info(f"Found pre-existing mobi dump, overwriting.")
@@ -36,11 +36,12 @@ def dumpMobi(mobiPath, force=False):
 		logging.info(f"Found pre-existing mobi dump, keeping it.")
 	return f"{workingDirectory}/dump/{filename}"
 
-def getContentFiles(inFolder):
+def getContentFile(inFolder):
 	"""Parses passed dumped mobi folder and generates a list of xhtml/html files which contain the books text content"""
 	"""With mobi *should* be only one file, the list is a holdover from epub parsing"""		
 	#thrawn alliances part 2 starts at loc 540
-	#creates list of all files in dumped mobi folder
+	#crea[{"confidenceLevel" : int, "text" : matching text, "file" : path to html file}]tes list of all files in dumped mobi folder
+	logging.info("Getting content file")
 	fileList=[]
 	for root, dirs, files in os.walk(inFolder):
 		for file in files:
@@ -55,26 +56,57 @@ def getContentFiles(inFolder):
 	contentFile=fileList[0]
 	if len(fileList) > 1:
 		logging.debug(f"{len(fileList)} content files found, expected 1. Keeping first file {contentFile}")
-	logging.debug(f"Content files from folder {inFolder}: {*fileList,}")
+	logging.info(f"Content file {contentFile} found in folder {inFolder}")
 	#location: part0011.xhtml, line 96
 	return contentFile
 
-def findMatches(inFile, target, confidenceLevel=80):
+def findMatch(inFile, target, confidenceLevel=80, poorMatchMargin=10, promptPoorMatches=True):
 	"""Parses the specified xhtml/html file within the specified ebook and searche ebook line which matches the transcripted text"""
-	matches = [] #list of strings matching transcription *should* only be one match ideally but ynk. 
-				 #Format: [(confidence level, matching string, path to file, tagged html)] note: the unaltered line will be stored, not the adjusted one. 
+	matches = [] #list of dictionaries of strings matching transcription *should* only be one match ideally but ynk. 
+				 #Format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}] note: the unaltered line will be stored, not the adjusted one. 
+	poorMatches = []
 	with open(inFile, "r") as html:
 		soup=BeautifulSoup(html, "xml", from_encoding="utf-8") #init beautiful soup
 	logging.debug(f"Searching {inFile} for text: {target} with confidence level {confidenceLevel}")
 	for tag in soup.body.find_all(True):
-		result = compareText(transcribedText=target, ebookText=tag.text, confidenceLevel=confidenceLevel)
+		result = compareText(transcribedText=target, ebookText=tag.text, confidenceLevel=confidenceLevel-poorMatchMargin)
 		if result != None:
 			result["file"]=inFile
-			matches.append(result)
-			logging.info(f"Found matching string in {inFile} with {confidenceLevel}% accuracy:\n	{target}matches\n	{tag.text}")
+			result["location"]=None
+			if result["confidenceLevel"] >= confidenceLevel:
+				matches.append(result)
+			elif result["confidenceLevel"] >= (confidenceLevel-poorMatchMargin):
+				#fall back list if no matches meet confidence level
+				poorMatches.append(result)
+			logging.info(f"Found matching string with {result['confidenceLevel']}% accuracy in {inFile}:\n	{target}matches\n	{tag.text}")
 		else:
 			pass
-	return matches
+	if len(matches) > 1:
+		result = max(matches, key=lambda x: x["confidenceLevel"])
+	else:
+		try:
+			result = matches[0]
+		except IndexError:
+			#list is empty because no matches were found, if searchUntilMatch is True will execute again with lower confidence
+			logging.info(f"No matching text found for string {target}")
+			print(f"No matches found for transcribed string:\n-{target}")
+			if len(poorMatches) >= 1:
+				if promptPoorMatches:
+					print("="*90)
+					print(f"However poorer match(es) were found with at least {confidenceLevel-poorMatchMargin} certainty")
+					print(f"If one of the text(s) below is the correct match for the transcribed text [1] please enter its number, or 0 if none.")
+					print(f"[0] : {target}")
+					for index, match in enumerate(poorMatches):
+						print(f"[{index+1}] : {match['text']}")
+					inp=input("Enter correct string number, or 0 to skip: ")
+					if inp not in range(1,len(poorMatches)+1):
+						result = None
+					else:
+						logging.info(f"User selected correct matching string")
+						result=poorMatches[inp-1]
+			else:
+				print(f"Nor any matches within {poorMatchMargin}% of {confidenceLevel}.")
+	return result
 
 def compareText(transcribedText, ebookText, confidenceLevel=80):
 	"""Makes two strings as similar as possible then uses fuzzy text matching to compare two strings"""
@@ -101,25 +133,27 @@ def compareText(transcribedText, ebookText, confidenceLevel=80):
 		return None
 
 def findBytes(file, searchText):
-	"""Calculates number of bytes preceeding each string found from findMatches"""
-	"""it takes the output of findMatches as input"""
+	"""Calculates number of bytes preceeding each string found from findMatch"""
+	"""it takes the output of findMatch as input"""
 	with open(file,"rb") as file:
 		position = file.read().find(searchText.encode("utf-8"))
+	logging.info(f"Found byte position: {position} of searchText {searchText}")
 	return position
 		
 def calculateLocation(numBytes):
 	loc = math.floor((numBytes * 2) / 300 + 1)
-	return loc
+	logging.info(f"Found kindle location: {loc} for byte position: {numBytes}")
+	return int(loc)
 
 """wrapper"""
 
 def parseMobi(mobiPath):
 	dumpFolder = dumpMobi(mobiPath=mobiPath)
-	contentFiles = getContentFiles(inFolder=dumpFolder)
-	return contentFiles
+	contentFile = getContentFile(inFolder=dumpFolder)
+	return contentFile #returns html file
 
 def searchEbook(mobiDump, searchText):
-	"""wrapper for getContentFiles() and findMatches(), takes an ebook and a snippet of text and returns any matches"""
+	"""wrapper for findMatch(), loops over list of strings (or a single one) and finds matches in specified mobi dump"""
 	matches=[]
 	if not isinstance(searchText, list):
 		#searchEbook accepts a list of strings to search, if provided a single string add it to a list
@@ -129,18 +163,21 @@ def searchEbook(mobiDump, searchText):
 		searchText.append(text)
 
 	for searchString in searchText:
-		matches.extend(findMatches(inFile=mobiDump, target=searchString))
+		matches.append(findMatch(inFile=mobiDump, target=searchString))
 
-	return matches
+	return matches #A list of dictionaries in format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}]
 
 def searchLocations(excerpts):
 	"""takes list of dictionaries and finds their kindle locations"""
 	locations = [] #list of dictionaries 
 	for excerpt in excerpts:
-		loc=calculateLocation(findBytes(file=excerpt["file"],searchText=excerpt["text"]))
-		excerpt["location"]=loc
+		if excerpt == None:
+			continue
+		position=findBytes(file=excerpt["file"],searchText=excerpt["text"])
+		location=calculateLocation(position)
+		excerpt["location"]=location
 		locations.append(excerpt)
-	return locations
+	return locations #list of dictionaries in format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}]
 
 
 
