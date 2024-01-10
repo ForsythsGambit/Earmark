@@ -60,25 +60,25 @@ def getContentFile(inFolder):
 	#location: part0011.xhtml, line 96
 	return contentFile
 
-def findMatch(inFile, target, confidenceLevel=80, poorMatchMargin=10, promptPoorMatches=True):
+def findMatch(inputFile, searchText, confidenceLevel=80, poorMatchMargin=10, promptPoorMatches=True):
 	"""Parses the specified xhtml/html file within the specified ebook and searche ebook line which matches the transcripted text"""
 	matches = [] #list of dictionaries of strings matching transcription *should* only be one match ideally but ynk. 
 				 #Format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}] note: the unaltered line will be stored, not the adjusted one. 
 	poorMatches = []
-	with open(inFile, "r") as html:
+	with open(inputFile, "r") as html:
 		soup=BeautifulSoup(html, "xml", from_encoding="utf-8") #init beautiful soup
-	logging.debug(f"Searching {inFile} for text: {target} with confidence level {confidenceLevel}")
+	logging.debug(f"Searching {inputFile} for text: {searchText} with confidence level {confidenceLevel}")
 	for tag in soup.body.find_all(True):
-		result = compareText(transcribedText=target, ebookText=tag.text, confidenceLevel=confidenceLevel-poorMatchMargin)
+		result = compareText(transcribedText=searchText, ebookText=tag.text, confidenceLevel=confidenceLevel-poorMatchMargin)
 		if result != None:
-			result["file"]=inFile
+			result["file"]=inputFile
 			result["location"]=None
 			if result["confidenceLevel"] >= confidenceLevel:
 				matches.append(result)
 			elif result["confidenceLevel"] >= (confidenceLevel-poorMatchMargin):
 				#fall back list if no matches meet confidence level
 				poorMatches.append(result)
-			logging.info(f"Found matching string with {result['confidenceLevel']}% accuracy in {inFile}:\n	{target}matches\n	{tag.text}")
+			logging.info(f"Found matching string with {result['confidenceLevel']}% accuracy in {inputFile}:\n	{searchText}matches\n	{tag.text}")
 		else:
 			pass
 	if len(matches) > 1:
@@ -88,14 +88,14 @@ def findMatch(inFile, target, confidenceLevel=80, poorMatchMargin=10, promptPoor
 			result = matches[0]
 		except IndexError:
 			#list is empty because no matches were found, if searchUntilMatch is True will execute again with lower confidence
-			logging.info(f"No matching text found for string {target}")
-			print(f"No matches found for transcribed string:\n-{target}")
+			logging.info(f"No matching text found for string {searchText}")
+			print(f"No matches found for transcribed string:\n-{searchText}")
 			if len(poorMatches) >= 1:
 				if promptPoorMatches:
 					print("="*90)
 					print(f"However poorer match(es) were found with at least {confidenceLevel-poorMatchMargin} certainty")
 					print(f"If one of the text(s) below is the correct match for the transcribed text [1] please enter its number, or 0 if none.")
-					print(f"[0] : {target}")
+					print(f"[0] : {searchText}")
 					for index, match in enumerate(poorMatches):
 						print(f"[{index+1}] : {match['text']}")
 					inp=input("Enter correct string number, or 0 to skip: ")
@@ -111,10 +111,10 @@ def findMatch(inFile, target, confidenceLevel=80, poorMatchMargin=10, promptPoor
 def compareText(transcribedText, ebookText, confidenceLevel=80):
 	"""Makes two strings as similar as possible then uses fuzzy text matching to compare two strings"""
 	sLine = ebookText
-	target = transcribedText 
+	searchText = transcribedText 
 	line = sLine.lower() #the transcription will be all lowercase so this will improve accuracy
 	#split strings by whitespace to count words
-	tempTarg=target.split()
+	tempTarg=searchText.split()
 	tempLine=line.split()
 	finLine = []
 	#trim text from ebook to same length of transcription for better comparison
@@ -126,7 +126,7 @@ def compareText(transcribedText, ebookText, confidenceLevel=80):
 		finLine=tempLine
 	
 	lineText = " ".join(finLine)
-	confidence = fuzz.ratio(target, lineText) 
+	confidence = fuzz.ratio(searchText, lineText) 
 	if confidence  > confidenceLevel:
 		return {"confidenceLevel" : confidence, "text" : sLine}
 	else:
@@ -163,7 +163,7 @@ def searchEbook(mobiDump, searchText):
 		searchText.append(text)
 
 	for searchString in searchText:
-		matches.append(findMatch(inFile=mobiDump, target=searchString))
+		matches.append(findMatch(inputFile=mobiDump, searchText=searchString))
 
 	return matches #A list of dictionaries in format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}]
 

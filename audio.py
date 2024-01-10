@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import speech_recognition as sr
 from thefuzz import fuzz 
-import ffmpy
 import sys
 import dotenv
 import os
@@ -9,32 +8,22 @@ import logging
 import subprocess
 """Transcription Functions"""
 
-def prepFile(inFile, time=15):
+def prepFile(inputFile, time=15):
 	"""takes inputed audio file, trims it keeping only the first {time} seconds and converts it to a .wav for transcription"""
-	outPath=f"{os.getcwd()}/temp/{os.path.basename(inFile).split('.')[0]}.wav"
-	logging.debug(f"Prepping file {inFile}")
-	subprocess.run(["ffmpeg","-i",inFile,"-t",str(time),outPath,"-loglevel","error"])
-	ff = ffmpy.FFmpeg(
-		inputs={
-			inFile : None
-		},
-		outputs={
-			outPath : f"-t {time} -loglevel error" #this splits inFile at the `.` , takes the first half and adds .wav as the file extension
-		}
-	)
-	#ff.run()
+	outputPath=f"{os.getcwd()}/temp/{os.path.basename(inputFile).split('.')[0]}.wav"
+	logging.debug(f"Prepping file {inputFile}")
+	subprocess.run(["ffmpeg","-i",inputFile,"-t",str(time),outPath,"-loglevel","error"])
 	
-	
-	return outPath
+	return outputPath
 
-def transcribe(inFile):
+def transcribe(inputFile):
 	dotenv.load_dotenv() #load google cloud API key from .env to its enviroment variable
 	recogonizer=sr.Recognizer() #init speech_recognition
 	#convert .wav file into an AudioFile instance
-	audioFile = sr.AudioFile(inFile)  
+	audioFile = sr.AudioFile(inputFile)  
 	with audioFile as source:
 		recordedAudio = recogonizer.record(source)
-	os.remove(inFile) #remove .wav file
+	os.remove(inputFile) #remove .wav file
 	return recogonizer.recognize_google_cloud(recordedAudio) #call google cloud api to transcribe audio
 
 """Wrapper"""
