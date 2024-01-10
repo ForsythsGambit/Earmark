@@ -1,5 +1,7 @@
 /.venv
-/__pycache__
+**/__pycache__
+
+/dump
 /model
 /test
 start.sh
@@ -10,9 +12,14 @@ links.txt
 *.epub
 *.mobi
 test.*
+*.html
 gcloud-earmark-key.json
 .env
 *.log
 targ.txt
-todo.md
 *.js
+experiment.py
+output.json
+apiCache.json
+
+config.toml

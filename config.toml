@@ -1,6 +1,11 @@
-[Files]
-ebook=""
-audiobook=""
+mobiFilePath = ""
+audiobookDirectoryPath = ""
 
-[Values]
-confidenceLevel=80
+transcriptionConfidenceThreshold = 80
+poorMatchConfidenceMargin = 10
+
+loggingOutput = "earmark.log"
+loggingLevel = "debug"
+
+apiCache = "apiCache.json"
+resultLocation = "output.json"
