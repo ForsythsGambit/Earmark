@@ -19,3 +19,4 @@ targ.txt
 *.js
 experiment.py
 output.json
+apiCache.json
