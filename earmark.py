@@ -22,6 +22,9 @@ class Earmark():
 			#init Earmark by config file
 			with open(configPath, "r") as tomlFile:
 				initializationArguments = toml.load(tomlFile)
+		elif "cfg" in kwargs:
+			with open(kwargs["cfg"], "r") as tomlFile:
+				initializationArguments = toml.load(tomlFile)
 		else:
 			#explicitly told to ignore config file
 			initializationArguments = kwargs
