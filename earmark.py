@@ -5,6 +5,7 @@ import toml
 import os
 import json
 from datetime import datetime
+import fire
 
 
 class Earmark():
@@ -131,3 +132,6 @@ class Earmark():
 			excerpt["location"]=location
 			locations.append(excerpt)
 		return locations #list of dictionaries in format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}]
+
+if __name__ == "__main__":
+	fire.Fire(Earmark)
