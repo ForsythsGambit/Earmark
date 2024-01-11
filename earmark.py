@@ -48,7 +48,7 @@ class Earmark():
 		#output files
 		self.apiCache=initializationArguments["apiCache"]
 
-	def execute(self):
+	def run(self):
 		transcriptions = self.processAudiobook()
 		for transcript in transcriptions:
 			logging.info(f"{transcript['file']} : {transcript['text']}")
