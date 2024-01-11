@@ -5,3 +5,5 @@ TODO:
 - work on support audio format list
 - add support for processing m4bs
 - add progress bar when converting/transcribing
+- properly format repository to push a build to pypi
+- create a binary with [PyOxidizer](https://github.com/indygreg/PyOxidizer)
