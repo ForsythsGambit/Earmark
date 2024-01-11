@@ -53,9 +53,14 @@ def getContentFile(inFolder):
 			elif ((split[1] == "html") or (split[1]=="xhtml")):
 				fileList.append(filename)
 
-	contentFile=fileList[0]
-	if len(fileList) > 1:
+	if len(fileList) == 0:
+		logging.CRITICAL(f"No html file found in dump directory {inFolder}")
+		raise FileNotFoundError
+	elif len(fileList) > 1:
 		logging.debug(f"{len(fileList)} content files found, expected 1. Keeping first file {contentFile}")
+	else:
+		#all good
+		contentFile=fileList[0]	
 	logging.info(f"Content file {contentFile} found in folder {inFolder}")
 	#location: part0011.xhtml, line 96
 	return contentFile
