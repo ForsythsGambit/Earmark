@@ -5,6 +5,7 @@ import toml
 import os
 import json
 from datetime import datetime
+import fire
 
 
 class Earmark():
@@ -20,6 +21,9 @@ class Earmark():
 		if configPath != None:
 			#init Earmark by config file
 			with open(configPath, "r") as tomlFile:
+				initializationArguments = toml.load(tomlFile)
+		elif "cfg" in kwargs:
+			with open(kwargs["cfg"], "r") as tomlFile:
 				initializationArguments = toml.load(tomlFile)
 		else:
 			#explicitly told to ignore config file
@@ -44,7 +48,7 @@ class Earmark():
 		#output files
 		self.apiCache=initializationArguments["apiCache"]
 
-	def execute(self):
+	def run(self):
 		transcriptions = self.processAudiobook()
 		for transcript in transcriptions:
 			logging.info(f"{transcript['file']} : {transcript['text']}")
@@ -131,3 +135,6 @@ class Earmark():
 			excerpt["location"]=location
 			locations.append(excerpt)
 		return locations #list of dictionaries in format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}]
+
+if __name__ == "__main__":
+	fire.Fire(Earmark)

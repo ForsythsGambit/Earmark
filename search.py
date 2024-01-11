@@ -152,11 +152,6 @@ def calculateLocation(numBytes):
 
 
 if __name__ == '__main__':
-	# see comment in main.py
-	args = sys.argv
-	try:
-		globals()[args[1]](*args[2:])
-	except IndexError:
-		pass
+	pass
 
 		

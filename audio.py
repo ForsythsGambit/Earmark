@@ -28,9 +28,4 @@ def transcribe(inputFile):
 	
 
 if __name__ == '__main__':
-	args = sys.argv # [current file, function name , *args]
-	try:
-		globals()[args[1]](*args[2:])
-	except IndexError:
-		#script was called without any commandline arguments, otherwise it would error with IndexError
-		pass
+	pass
