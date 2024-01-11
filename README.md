@@ -25,11 +25,25 @@ Alternatively however,  you can edit the `transcribe` function in `audio.py` and
 
 ## Usage
 The Earmark class provides an object oriented wrapper around the functions of `audio.py` and `search.py` for your convenience. Ensure you have edited `config.toml` with the appropriate paths and values (or passed them appropriately as keyword arguments). 
+
+Earmark can be used in two ways, either as a command line interface or as python module.
+
+### Module
+To use as a module see the code below
 ```
 import earmark
 em = earmark.Earmark(configPath="config.toml")
-em.execute()
+em.run()
 ```
+
+### CLI
+Thanks to the wonderful [fire](https://github.com/google/python-fire) Earmark now has a CLI! Simply execute it as follows:
+```
+$ python3 earmark.py --cfg=config.toml run
+```
+Bam! And thats it!
+
+---
 It will now transcribe segments of your audiobook and identify the respective kindle locations (nearly) automatically! Be advised user input may be needed to select correctly matching text if it cannot be detemined automatically.
 
 The output will be printed into a json file, `output.json` in the same directory by default.
