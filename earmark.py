@@ -6,6 +6,8 @@ import os
 import json
 from datetime import datetime
 import fire
+from tqdm import tqdm
+import time
 
 
 class Earmark():
@@ -69,8 +71,8 @@ class Earmark():
 		jsonData = json.dumps(locations, indent=4)
 		with open("output.json", "w") as out:
 			out.write(str(locations))
-		print(jsonData)
-
+		#print(jsonData)
+		print("Results output to output.json")
 	def processAudiobook(self):
 		supportedAudioFormats = ["mp3","wav", "ogg", "m4a", "flac"] #todo
 		preppedAudioFiles=[]
@@ -81,7 +83,10 @@ class Earmark():
 		if "temp" not in os.listdir(workingDirectory):
 			os.mkdir("temp")
 			logging.debug("Making temp folder for audio files")
-		for file in files:
+		#fileProcessBar = tqdm(files)
+		print("Prepping audio files...")
+		for file in tqdm(files):
+			#fileProcessBar.set_description(f"Processing audio file: {file}")
 			#logging.debug(f"Checking file: {file}") #a little *too* verbose
 			split=file.split(".")
 			#logging.debug(f"Split file extension into {split}") # this one too
@@ -95,7 +100,10 @@ class Earmark():
 				logging.debug(f"Found file for processing: {file}")
 				preppedAudioFiles.append(audio.prepFile(f"{self.audiobookDirectory}/{file}"))
 		logging.info(f"Processed {len(preppedAudioFiles)} files: {*preppedAudioFiles,}")
-		for file in preppedAudioFiles:
+		#transcriptionBar = tqdm(preppedAudioFiles)
+		print("Transcribing audio files...")
+		for file in tqdm(preppedAudioFiles):
+			#transcriptionBar.set_description(f"Transcribing audio clip: {os.path.basename(file)}")
 			dict={}
 			dict["file"]=file
 			dict["text"]=audio.transcribe(file)
@@ -118,8 +126,8 @@ class Earmark():
 			text=searchText
 			searchText = []
 			searchText.append(text)
-
-		for searchString in searchText:
+		print("Searching dumped mobi file for matching strings...")
+		for searchString in tqdm(searchText):
 			matches.append(search.findMatch(inputFile=mobiDump, searchText=searchString))
 
 		return matches #A list of dictionaries in format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}]
@@ -127,6 +135,7 @@ class Earmark():
 	def searchLocations(self, excerpts):
 		"""takes list of dictionaries and finds their kindle locations"""
 		locations = [] #list of dictionaries 
+		#progress bar uneccessary here
 		for excerpt in excerpts:
 			if excerpt == None:
 				continue
