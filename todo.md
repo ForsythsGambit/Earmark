@@ -7,3 +7,4 @@ TODO:
 - [x] add progress bar when converting/transcribing
 - [ ] properly format repository to push a build to pypi
 - [ ]create a binary with [PyOxidizer](https://github.com/indygreg/PyOxidizer)
+- [ ] convert path strings to path-lib data types
