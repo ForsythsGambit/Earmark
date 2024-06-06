@@ -74,44 +74,49 @@ class Earmark():
 		#print(jsonData)
 		print("Results output to output.json")
 	def processAudiobook(self):
-		supportedAudioFormats = ["mp3","wav", "ogg", "m4a", "flac"] #todo
 		preppedAudioFiles=[]
 		transcriptions = []
 		workingDirectory = os.getcwd()
 		files=os.listdir(self.audiobookDirectory)
-		logging.debug(f"Found {len(files)} files in {self.audiobookDirectory}")
 		if "temp" not in os.listdir(workingDirectory):
 			os.mkdir("temp")
 			logging.debug("Making temp folder for audio files")
-		#fileProcessBar = tqdm(files)
 		print("Prepping audio files...")
-		for file in tqdm(files):
-			#fileProcessBar.set_description(f"Processing audio file: {file}")
-			#logging.debug(f"Checking file: {file}") #a little *too* verbose
-			split=file.split(".")
-			#logging.debug(f"Split file extension into {split}") # this one too
-			if len(split) == 1:
-				logging.debug(f"file: {file} has no extension!")
-				continue
-			if split[1] == "m4b":
-				logging.error("m4b format audiobooks are unsupported, please split it into multiple mp3s")
-				raise ValueError("Unsupported file format, please split it into multiple .mp3s!")
-			if split[1] in supportedAudioFormats:
-				logging.debug(f"Found file for processing: {file}")
-				preppedAudioFiles.append(audio.prepFile(f"{self.audiobookDirectory}/{file}"))
-		logging.info(f"Processed {len(preppedAudioFiles)} files: {*preppedAudioFiles,}")
-		#transcriptionBar = tqdm(preppedAudioFiles)
+
+		mp3Files = [file for file in files if file.endswith(".mp3")] #create list of all mp3 files in dir
+		m4bFile = [file for file in files if file.endswith(".m4b")] #create list of all m4b files in dir
+		if mp3Files and m4bFile: #if both mp3 and m4b files
+			logging.critical("mp3 and m4b files present in directory, unsupported")
+			raise ValueError
+		elif mp3Files: 
+			#transcribe mp3 files
+			logging.debug(f"found {len(mp3Files)} mp3 files to process")
+			for mp3 in tqdm(mp3Files):
+				logging.debug(f"Found file for processing: {mp3}")
+				preppedAudioFiles.append(audio.prepFile(f"{self.audiobookDirectory}/{mp3}"))
+		elif m4bFile and len(m4bFile)<2:
+			logging.debug(f"Found m4b audiobook file {self.audiobookDirectory}{m4bFile[0]}")
+			chapters=audio.splitM4b(f"{self.audiobookDirectory}{m4bFile[0]}")
+			#logging.debug(f"Split m4b file metadata: \n{json.dumps(chapters, indent=4,sort_keys=True)}")
+			for chapter in tqdm(chapters):
+				logging.debug(chapters[chapter])
+				preppedAudioFiles.append((chapters[chapter]["sliceFile"]))
+		elif len(m4bFile) > 1:
+			logging.critical(f"Found more than one m4b file!")
+		print(preppedAudioFiles, sep="\n")
+		logging.info(f"Processed {len(preppedAudioFiles)} file(s): {*preppedAudioFiles,}")
 		print("Transcribing audio files...")
+		"""
 		for file in tqdm(preppedAudioFiles):
-			#transcriptionBar.set_description(f"Transcribing audio clip: {os.path.basename(file)}")
 			dict={}
 			dict["file"]=file
 			dict["text"]=audio.transcribe(file)
 			transcriptions.append(dict)
 		logging.info(f"Transcribed {len(transcriptions)} files")
+		"""
 		os.rmdir("./temp")
 		return transcriptions
-
+		
 	def parseMobi(self):
 		dumpFolder = search.dumpMobi(self.mobiPath)
 		contentFile = search.getContentFile(dumpFolder)
