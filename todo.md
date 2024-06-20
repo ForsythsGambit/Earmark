@@ -11,6 +11,7 @@
 - [ ] create a binary with [PyOxidizer](https://github.com/indygreg/PyOxidizer)
 ## Other
 - [ ] clean up function to delete all intermediate folder
+- [ ] Use path objects rather than strings
 - [ ] Create method to save generated data and to ingest it rather than re-transcribing or re searching 
 
 ---
