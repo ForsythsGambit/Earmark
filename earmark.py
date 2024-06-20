@@ -12,25 +12,24 @@ import time
 
 class Earmark():
 	"""Class which houses wrappers for audio&search, provides an oo more user friendly front to interact with Earmark"""
-	def __init__(self,configPath=None, **kwargs):
+	def __init__(self, configPath: str = None, **kwargs) -> None:
 		"""Two methods of initialization, via key word args. *or* a config file
 		if a vaild config file is found any other kwargs will be ignored."""
 		
 		
 		#dictionary mapping strings to corresponding log level so theres no evaluation of strings!
-		logLevelDictionary = {"debug" : logging.DEBUG, "info" : logging.INFO, "warning" : logging.WARNING, "error" : logging.ERROR, "critical" : logging.CRITICAL}
-		initializationArguments={}
-		if configPath != None:
-			#init Earmark by config file
+		logLevelDictionary: dict[str, int] = {"debug" : logging.DEBUG, "info" : logging.INFO, "warning" : logging.WARNING, "error" : logging.ERROR, "critical" : logging.CRITICAL}
+		initializationArguments: dict = {}
+
+		if configPath != None: #User provided configPath as a command line argument
 			with open(configPath, "r") as tomlFile:
 				initializationArguments = toml.load(tomlFile)
-		elif "cfg" in kwargs:
+		elif "cfg" in kwargs: #Alternatively user passed configPath as cfg instead
 			with open(kwargs["cfg"], "r") as tomlFile:
 				initializationArguments = toml.load(tomlFile)
-		else:
-			#explicitly told to ignore config file
+		else: #configPath not provided, so initializing based on kwargs
 			initializationArguments = kwargs
-				
+		
 		#will use same code to load initArgs into instance atrributes
 		#paths
 		self.mobiPath = initializationArguments["mobiFilePath"]
@@ -38,10 +37,12 @@ class Earmark():
 		#values
 		self.confidenceLevel=initializationArguments["transcriptionConfidenceThreshold"]
 		self.poorMatchMargin = initializationArguments["poorMatchConfidenceMargin"]
-		#logging
+		
+		"""Initialize logging"""
 		initializationArguments["loggingLevel"]=initializationArguments["loggingLevel"].lower()
 		if initializationArguments["loggingLevel"] not in logLevelDictionary:
 			initializationArguments["loggingLevel"]="info"
+		
 		logging.basicConfig(filename=initializationArguments["loggingOutput"],level=logLevelDictionary[initializationArguments["loggingLevel"]] ,encoding="utf-8")
 		with open(initializationArguments["loggingOutput"], "a") as log:
 			log.write("="*100)
@@ -73,6 +74,7 @@ class Earmark():
 			out.write(str(locations))
 		#print(jsonData)
 		print("Results output to output.json")
+
 	def processAudiobook(self):
 		supportedAudioFormats = ["mp3","wav", "ogg", "m4a", "flac"] #todo
 		preppedAudioFiles=[]
