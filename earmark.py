@@ -37,6 +37,7 @@ class Earmark():
 		#values
 		self.confidenceLevel=initializationArguments["transcriptionConfidenceThreshold"]
 		self.poorMatchMargin = initializationArguments["poorMatchConfidenceMargin"]
+		self.tryApiCacheFirst = initializationArguments["tryApiCacheFirst"]
 		
 		"""Initialize logging"""
 		initializationArguments["loggingLevel"]=initializationArguments["loggingLevel"].lower()
