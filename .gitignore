@@ -4,6 +4,8 @@
 /dump
 /model
 /test
+/data
+
 start.sh
 links.txt
 *.mp3
