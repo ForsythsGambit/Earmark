@@ -62,7 +62,6 @@ def getContentFile(inFolder):
 		#all good
 		contentFile=fileList[0]	
 	logging.info(f"Content file {contentFile} found in folder {inFolder}")
-	#location: part0011.xhtml, line 96
 	return contentFile
 
 def findMatch(inputFile, searchText, confidenceLevel=80, poorMatchMargin=10, promptPoorMatches=True):
