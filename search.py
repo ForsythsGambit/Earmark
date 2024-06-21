@@ -17,9 +17,12 @@ def dumpMobi(mobiPath, force=False) -> str:
 		os.mkdir('dump')
 	
 	fileSplit:list[str]  = mobiPath.split(".")
+	if fileSplit[0] == "":
+		"""Relative paths previously broke file extension checking"""
+		fileSplit.pop(0)
 	if len(fileSplit) != 2:
 		#ensure valid filename
-		logging.exception(f"Did not receive path to mobiPath with a valid filename (no or multiple extensions), instead received {mobiPath}")
+		logging.exception(f"Did not receive path to mobiPath with a valid filename (no or multiple extensions), instead received \"{mobiPath}\"")
 		raise ValueError
 		
 	filename: str = os.path.basename(mobiPath)
@@ -91,7 +94,7 @@ def findMatch(inputFile: str, searchText: str, confidenceLevel: int = 80, poorMa
 		else:
 			pass
 	if len(matches) > 1:
-		result = max(matches, key=lambda x: x["confidenceLevel"]) #one liner to select highest confidence match
+		result = max(matches, key=lambda x: x.confidenceLevel) #one liner to select highest confidence match
 	else:
 		try:
 			result = matches[0]
@@ -113,6 +116,8 @@ def findMatch(inputFile: str, searchText: str, confidenceLevel: int = 80, poorMa
 					else:
 						logging.info(f"User selected correct matching string")
 						result=poorMatches[inp-1]
+				else:
+					result = max(poorMatches, key=lambda x: x.confidenceLevel) #one liner to select highest confidence match
 			else:
 				print(f"Nor any matches within {poorMatchMargin}% of {confidenceLevel}.")
 	return result
@@ -137,7 +142,7 @@ def compareText(transcribedText, ebookText, confidenceLevel=80) -> Match:
 	lineText = " ".join(finLine)
 	confidence = fuzz.ratio(searchText, lineText) 
 	if confidence  > confidenceLevel:
-		return Match(confidenceLevel = confidence, text = sLine) #{"confidenceLevel" : confidence, "text" : sLine}
+		return Match(confidenceLevel = confidence, text = sLine, file = None, location = None) #{"confidenceLevel" : confidence, "text" : sLine}
 	else:
 		return None
 

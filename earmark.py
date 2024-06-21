@@ -34,13 +34,13 @@ class Earmark():
 		
 		#will use same code to load initArgs into instance atrributes
 		#paths
-		self.mobiPath = initializationArguments["mobiFilePath"]
-		self.audiobookDirectory = initializationArguments["audiobookDirectoryPath"]
+		self.mobiPath: str = initializationArguments["mobiFilePath"]
+		self.audiobookDirectory: str = initializationArguments["audiobookDirectoryPath"]
 		#values
-		self.confidenceLevel=initializationArguments["transcriptionConfidenceThreshold"]
-		self.poorMatchMargin = initializationArguments["poorMatchConfidenceMargin"]
-		self.tryApiCacheFirst = initializationArguments["tryApiCacheFirst"]
-		
+		self.confidenceLevel: int = initializationArguments["transcriptionConfidenceThreshold"]
+		self.poorMatchMargin: int = initializationArguments["poorMatchConfidenceMargin"]
+		self.tryApiCacheFirst: bool = initializationArguments["tryApiCacheFirst"]
+		self.autoSelectHighest: bool = initializationArguments["autoSelectHighest"]
 		"""Initialize logging"""
 		initializationArguments["loggingLevel"]=initializationArguments["loggingLevel"].lower()
 		if initializationArguments["loggingLevel"] not in logLevelDictionary:
@@ -56,25 +56,28 @@ class Earmark():
 
 	def run(self):
 		transcriptions: list[Transcript] = []
-
 		if self.tryApiCacheFirst and self.apiCache:
 			logging.info("Using cached transcription data..")
 			with open("./apiCache.json", 'r') as apiCache:
 				json_data = json.load(apiCache)
-
-			for item in json_data:
-				transcript = Transcript(file=item['file'], text=item['text'])
-				transcriptions.append(transcript)
-
+			if json_data:
+				for item in json_data:
+					transcript = Transcript(file=item['file'], text=item['text'])
+					transcriptions.append(transcript)
+			else:
+				logging.info("API Cache empty, reprocessing.")
+				logging.info("Processing audiobook..")
+				transcriptions = self.processAudiobook()
 		else:
 			logging.info("Processing audiobook..")
 			transcriptions = self.processAudiobook()
 				
 		text: list[str] = [transcript.text for transcript in transcriptions]
-		dump: str = self.parseMobi()
-		matches: list[Match] = self.searchEbook(mobiDump=dump, searchText=text)
+		dumpedHtmlFile: str = self.parseMobi()
+		matches: list[Match] = self.searchEbook(mobiDump=dumpedHtmlFile, searchText=text)
 		locations: list[Match] = self.searchLocations(matches)
-		jsonData = json.dumps(locations, indent=4)
+		dictionaryLocations: list[dict] = [asdict(location) for location in locations]
+		jsonData = json.dumps(dictionaryLocations, indent=4)
 		with open("output.json", "w") as out:
 			out.write(str(jsonData))
 		print("Results output to output.json")
@@ -152,8 +155,9 @@ class Earmark():
 			searchText.append(text)
 		"""
 		print("Searching dumped mobi file for matching strings...")
+		logging.info("Searching dumped mobi file for matching strings...")
 		for searchString in tqdm(searchText):
-			matches.append(search.findMatch(inputFile=mobiDump, searchText=searchString, confidenceLevel=self.confidenceLevel, poorMatchMargin=self.poorMatchMargin, promptPoorMatches=True))
+			matches.append(search.findMatch(inputFile=mobiDump, searchText=searchString, confidenceLevel=self.confidenceLevel, poorMatchMargin=self.poorMatchMargin, promptPoorMatches= not self.autoSelectHighest))
 
 		return matches
 
