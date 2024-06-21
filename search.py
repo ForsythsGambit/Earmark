@@ -5,23 +5,25 @@ import subprocess
 from bs4 import BeautifulSoup
 from thefuzz import fuzz
 import math
+from header import *
 
-def dumpMobi(mobiPath, force=False):
+def dumpMobi(mobiPath, force=False) -> str:
 	"""dumps mobi file to a folder via kindle unpack"""
-	workingDirectory = os.getcwd()
+	workingDirectory: str = os.getcwd()
 	logging.info(f"Dumping mobi file to {os.getcwd()}/dump")
+
 	if "dump" not in os.listdir(workingDirectory):
-		#make dump directory if not found
 		logging.info(f"Making mobi dump directory")
 		os.mkdir('dump')
-	fileSplit = mobiPath.split(".")
+	
+	fileSplit:list[str]  = mobiPath.split(".")
 	if len(fileSplit) != 2:
 		#ensure valid filename
-		logging.exception("Did not receive path to mobiPath with a valid filename")
+		logging.exception(f"Did not receive path to mobiPath with a valid filename (no or multiple extensions), instead received {mobiPath}")
 		raise ValueError
-		return None
-	filename = os.path.basename(mobiPath)
-	filename=filename.split(".")[0]
+		
+	filename: str = os.path.basename(mobiPath)
+	filename: str = filename.split(".")[0]
 	
 	if filename not in os.listdir(f"{workingDirectory}/dump/"):
 		logging.info(f"Creating subdirectory dump/{filename}, dumping.")
@@ -36,13 +38,14 @@ def dumpMobi(mobiPath, force=False):
 		logging.info(f"Found pre-existing mobi dump, keeping it.")
 	return f"{workingDirectory}/dump/{filename}"
 
-def getContentFile(inFolder):
+def getContentFile(inFolder: str) -> str:
 	"""Parses passed dumped mobi folder and generates a list of xhtml/html files which contain the books text content"""
 	"""With mobi *should* be only one file, the list is a holdover from epub parsing"""		
 	#thrawn alliances part 2 starts at loc 540
 	#crea[{"confidenceLevel" : int, "text" : matching text, "file" : path to html file}]tes list of all files in dumped mobi folder
 	logging.info("Getting content file")
-	fileList=[]
+	fileList: list[str] = []
+
 	for root, dirs, files in os.walk(inFolder):
 		for file in files:
 			filename=os.path.join(root, file)
@@ -60,33 +63,35 @@ def getContentFile(inFolder):
 		logging.debug(f"{len(fileList)} content files found, expected 1. Keeping first file {contentFile}")
 	else:
 		#all good
-		contentFile=fileList[0]	
+		contentFile: str = fileList[0]	
 	logging.info(f"Content file {contentFile} found in folder {inFolder}")
 	return contentFile
 
-def findMatch(inputFile, searchText, confidenceLevel=80, poorMatchMargin=10, promptPoorMatches=True):
+def findMatch(inputFile: str, searchText: str, confidenceLevel: int = 80, poorMatchMargin:int = 10, promptPoorMatches: bool = True) -> Match:
 	"""Parses the specified xhtml/html file within the specified ebook and searche ebook line which matches the transcripted text"""
 	matches = [] #list of dictionaries of strings matching transcription *should* only be one match ideally but ynk. 
 				 #Format: [{"confidenceLevel" : int, "text" : matching text, "file" : path to html file, "location" : int}] note: the unaltered line will be stored, not the adjusted one. 
-	poorMatches = []
+	poorMatches: list[Match] = []
+
 	with open(inputFile, "r") as html:
 		soup=BeautifulSoup(html, "xml", from_encoding="utf-8") #init beautiful soup
+	
 	logging.debug(f"Searching {inputFile} for text: {searchText} with confidence level {confidenceLevel}")
 	for tag in soup.body.find_all(True):
-		result = compareText(transcribedText=searchText, ebookText=tag.text, confidenceLevel=confidenceLevel-poorMatchMargin)
+		result: Match = compareText(transcribedText=searchText, ebookText=tag.text, confidenceLevel=confidenceLevel-poorMatchMargin)
 		if result != None:
-			result["file"]=inputFile
-			result["location"]=None
-			if result["confidenceLevel"] >= confidenceLevel:
+			result.file=inputFile
+			result.location=None
+			if result.confidenceLevel >= confidenceLevel:
 				matches.append(result)
-			elif result["confidenceLevel"] >= (confidenceLevel-poorMatchMargin):
+			elif result.confidenceLevel >= (confidenceLevel-poorMatchMargin):
 				#fall back list if no matches meet confidence level
 				poorMatches.append(result)
-			logging.info(f"Found matching string with {result['confidenceLevel']}% accuracy in {inputFile}:\n	{searchText}matches\n	{tag.text}")
+			logging.info(f"Found matching string with {result.confidenceLevel}% accuracy in {inputFile}:\n	{searchText}matches\n	{tag.text}")
 		else:
 			pass
 	if len(matches) > 1:
-		result = max(matches, key=lambda x: x["confidenceLevel"])
+		result = max(matches, key=lambda x: x["confidenceLevel"]) #one liner to select highest confidence match
 	else:
 		try:
 			result = matches[0]
@@ -101,7 +106,7 @@ def findMatch(inputFile, searchText, confidenceLevel=80, poorMatchMargin=10, pro
 					print(f"If one of the text(s) below is the correct match for the transcribed text [1] please enter its number, or 0 if none.")
 					print(f"[0] : {searchText}")
 					for index, match in enumerate(poorMatches):
-						print(f"[{index+1}] : {match['text']}")
+						print(f"[{index+1}] : {match.text}")
 					inp=input("Enter correct string number, or 0 to skip: ")
 					if inp not in range(1,len(poorMatches)+1):
 						result = None
@@ -112,7 +117,7 @@ def findMatch(inputFile, searchText, confidenceLevel=80, poorMatchMargin=10, pro
 				print(f"Nor any matches within {poorMatchMargin}% of {confidenceLevel}.")
 	return result
 
-def compareText(transcribedText, ebookText, confidenceLevel=80):
+def compareText(transcribedText, ebookText, confidenceLevel=80) -> Match: 
 	"""Makes two strings as similar as possible then uses fuzzy text matching to compare two strings"""
 	sLine = ebookText
 	searchText = transcribedText 
@@ -132,7 +137,7 @@ def compareText(transcribedText, ebookText, confidenceLevel=80):
 	lineText = " ".join(finLine)
 	confidence = fuzz.ratio(searchText, lineText) 
 	if confidence  > confidenceLevel:
-		return {"confidenceLevel" : confidence, "text" : sLine}
+		return Match(confidenceLevel = confidence, text = sLine) #{"confidenceLevel" : confidence, "text" : sLine}
 	else:
 		return None
 
