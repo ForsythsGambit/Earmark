@@ -55,7 +55,7 @@ class Earmark():
 		self.apiCache=initializationArguments["apiCache"]
 
 	def run(self):
-		transcriptions: list[Transcript]
+		transcriptions: list[Transcript] = []
 
 		if self.tryApiCacheFirst and self.apiCache:
 			logging.info("Using cached transcription data..")
