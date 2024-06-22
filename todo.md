@@ -2,6 +2,9 @@
 
 ## Accuracy improvement
 - [ ] use [inflext](https://pypi.org/project/inflect/) to convert arabic numbers to word numbers
+- [ ] remove raw unicode strings from ebook text, ie emdashes like this `\u2014`
+- [ ] Check ebook text for novel words/names that aren't normal english and remove them from both strings for better matching
+	- especially sanderson words, like allomancy, Kandra, Kolloss, Feruchimist etc which wont have been transcribed correctly.
 ## Features
 - [ ] work on support audio format list
 - [ ] add support for processing m4bs
