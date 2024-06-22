@@ -71,7 +71,6 @@ class Earmark():
 		else:
 			logging.info("Processing audiobook..")
 			transcriptions = self.processAudiobook()
-		breakpoint()		
 		text: list[str] = [transcript.text for transcript in transcriptions]
 		dumpedHtmlFile: str = self.parseMobi()
 		matches: list[Match] = self.searchEbook(mobiDump=dumpedHtmlFile, searchText=text)
