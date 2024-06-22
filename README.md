@@ -63,7 +63,7 @@ The transcribed text will be stored to a local json file (as specified in the co
 - see `todo.md` for more
 
 ## Attribution
-This project would have been impossible without the fine work of the devs who wrote [kindle-unpack](https://github.com/kevinhendricks/KindleUnpack). A copy of the files neccessary for the CLI are included under kindle-unpack/ and are licensed under the GPL v3. See the `COPYING` file in that directory for more information or refer to the link above to the view the source cod beyond what is used in this project. 
+This project would have been impossible without the fine work of the devs who wrote [kindle-unpack](https://github.com/kevinhendricks/KindleUnpack). A copy of the files neccessary for the CLI are included under kindle-unpack/ and are licensed under the GPL v3. See the `COPYING` file in that directory for more information or refer to the link above to the view the source code beyond what is used in this project. 
 
 ## Distribution
 Per the license of kindle-unpack, this project too is licensed under the GPL v3. Refer to `LICENSE` with any questions or concerns. 
