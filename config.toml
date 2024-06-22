@@ -3,9 +3,11 @@ audiobookDirectoryPath = ""
 
 transcriptionConfidenceThreshold = 80
 poorMatchConfidenceMargin = 10
+autoSelectHighest = false
 
 loggingOutput = "earmark.log"
 loggingLevel = "debug"
 
 apiCache = "apiCache.json"
 resultLocation = "output.json"
+tryApiCacheFirst = true
