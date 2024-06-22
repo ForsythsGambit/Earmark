@@ -71,13 +71,14 @@ class Earmark():
 		else:
 			logging.info("Processing audiobook..")
 			transcriptions = self.processAudiobook()
-				
+		breakpoint()		
 		text: list[str] = [transcript.text for transcript in transcriptions]
 		dumpedHtmlFile: str = self.parseMobi()
 		matches: list[Match] = self.searchEbook(mobiDump=dumpedHtmlFile, searchText=text)
 		locations: list[Match] = self.searchLocations(matches)
 		dictionaryLocations: list[dict] = [asdict(location) for location in locations]
 		jsonData = json.dumps(dictionaryLocations, indent=4)
+		
 		with open("output.json", "w") as out:
 			out.write(str(jsonData))
 		print("Results output to output.json")
@@ -166,9 +167,9 @@ class Earmark():
 		locations: list[Match] = [] 
 		#progress bar uneccessary here
 		for excerpt in excerpts:
-			if excerpt == None:
+			if excerpt.file == None or excerpt.text == "" or excerpt.confidenceLevel == 0:
 				continue
-			position=search.findBytes(file=excerpt.file,searchText=excerpt.text)
+			position=search.findBytes(filePath=excerpt.file, searchText=excerpt.text)
 			location=search.calculateLocation(position)
 			excerpt.location=location
 			locations.append(excerpt)
