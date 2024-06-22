@@ -2,9 +2,9 @@
 
 ## Overview
 Earmark is a tool intended to aid reading while switching between an ebook and audiobook by providing functionality similair to amazon's whisperSync.
-This is accomplished by transcribing the first 15 seconds of each file in an audiobook and indentifying the absolute kindle where the text occurs via this [method](https://wiki.mobileread.com/wiki/Page_numbers#Implementation). There is currently only support for audiobooks which are a folder of parts (typically mp3 files, but ffmpeg should support others provided the necessary codecs).Support for m4b files and calculating locations based on time stamps is planned, but has not yet been implemented. 
+This is accomplished by transcribing the first 15 seconds of each file in an audiobook and indentifying the absolute kindle location where the text occurs via this [method](https://wiki.mobileread.com/wiki/Page_numbers#Implementation). There is currently only support for audiobooks which are a folder of parts (typically mp3 files, but ffmpeg should support others provided the necessary codecs). Support for m4b files and calculating locations based on time stamps is planned, but has not yet been implemented. 
 
-**Please note** this requires you to have a copy of both: the .mobi file of your ebook and the audio files of your audiobook. In addition this project currently and will only support unencrypted mobi files. Circumventing the drm of your purchased ebook is both potentially illegal and outside the purview of this project.
+**Please note** this requires you to have a copy of both: the .mobi file of your ebook and the audio files of your audiobook. If you have epub files I recommend using calibre to convert to mobi, this is my work flow. In addition this project currently and will only support unencrypted mobi files. Circumventing the drm of your purchased ebook is both potentially illegal and outside the purview of this project.
 
 ## Installation
 1. Install the dependencies via `pip install -r requirements.txt`
@@ -17,7 +17,8 @@ This project uses google cloud via [sound_recognition](https://pypi.org/project/
 ```
 GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/google-cloud-key.json"
 ```
-If you receive an error claiming your key was not found try alternating from a absolute path to a relative one or vice versa, I'm unsure why this could happen however and it shouldn't occur.
+If you receive an error claiming your key was not found try alternating from a absolute path to a relative one or vice versa. 
+
 I selected Google Cloud for the following: New users recieve a 300$ credit for the first 90 days as well free transcription of 60 minutes of audio free a month. In addition the costs of transcription should you somehow surpass this amount is negligible.
 
 
@@ -42,12 +43,18 @@ Thanks to the wonderful [fire](https://github.com/google/python-fire) Earmark no
 ```
 $ python3 earmark.py --cfg=config.toml run
 ```
+or, assuming your python installation matches the shebang:
+```
+./earmark.py --cfg=config.toml run
+```
 Bam! And thats it!
 
 ---
 It will now transcribe segments of your audiobook and identify the respective kindle locations (nearly) automatically! Be advised user input may be needed to select correctly matching text if it cannot be detemined automatically.
 
 The output will be printed into a json file, `output.json` in the same directory by default.
+
+The transcribed text will be stored to a local json file (as specified in the config file) and by default on successive runs will be used rather than retranscribing. Please be sure to disable this when using Earmark with a new book.
 
 
 ## Roadmap
