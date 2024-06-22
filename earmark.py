@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import audio
 import search
 from header import *
