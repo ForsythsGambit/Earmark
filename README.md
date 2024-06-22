@@ -13,10 +13,11 @@ This is accomplished by transcribing the first 15 seconds of each file in an aud
 4. profit?
 
 ### Google Cloud
-This project uses google cloud via [sound_recognition](https://pypi.org/project/SpeechRecognition/) for the transcription of audio snippets, refer to this [guide](https://cloud.google.com/speech-to-text/docs/transcribe-api) on how to setup an account. The absolute path to your API key must be specified in a `.env` file as described below:
+This project uses google cloud via [sound_recognition](https://pypi.org/project/SpeechRecognition/) for the transcription of audio snippets, refer to this [guide](https://cloud.google.com/speech-to-text/docs/transcribe-api) on how to setup an account. The path to your API key must be specified in a `.env` file as described below:
 ```
 GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/google-cloud-key.json"
 ```
+If you receive an error claiming your key was not found try alternating from a absolute path to a relative one or vice versa, I'm unsure why this could happen however and it shouldn't occur.
 I selected Google Cloud for the following: New users recieve a 300$ credit for the first 90 days as well free transcription of 60 minutes of audio free a month. In addition the costs of transcription should you somehow surpass this amount is negligible.
 
 
