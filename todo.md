@@ -5,6 +5,7 @@
 - [ ] remove raw unicode strings from ebook text, ie emdashes like this `\u2014`
 - [ ] Check ebook text for novel words/names that aren't normal english and remove them from both strings for better matching
 	- especially sanderson words, like allomancy, Kandra, Kolloss, Feruchimist etc which wont have been transcribed correctly.
+- [ ] optimize searching of book, if the audio files are in order then we shouldn't need to check previous parts of it assuming that our match is good enough.
 ## Features
 - [ ] work on support audio format list
 - [ ] add support for processing m4bs
